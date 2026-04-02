@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anika James — Molecular & Cellular Biologist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Outfit:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#ffffff;--bg2:#f7faf9;--surface:#eef4f2;--surface2:#e0ece8;
+  --border:rgba(0,0,0,0.08);--border-h:rgba(13,148,136,0.25);
+  --text:#4a5568;--text-bright:#1a202c;--text-dim:#a0aec0;
+  --teal:#0d9488;--emerald:#059669;--coral:#f43f5e;--plum:#9333ea;--amber:#d97706;--green:#059669;
+  --teal-glow:rgba(13,148,136,0.08);--emerald-glow:rgba(5,150,105,0.06);--coral-glow:rgba(244,63,94,0.06);
+  --display:'Playfair Display',Georgia,serif;--body:'Outfit',system-ui,sans-serif;--mono:'Fira Code',monospace;
+  --ease:cubic-bezier(0.16,1,0.3,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--body);background:var(--bg);color:var(--text);line-height:1.7;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::selection{background:rgba(13,148,136,0.15);color:var(--text-bright)}
+#mol-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.7}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:0 2.5rem;transition:background .4s,border-color .4s}
+.nav.scrolled{background:rgba(255,255,255,0.88);backdrop-filter:blur(24px) saturate(1.4);border-bottom:1px solid var(--border)}
+.nav-inner{max-width:1240px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:72px}
+.nav-logo{font-family:var(--display);font-size:1.35rem;font-weight:700;color:var(--text-bright);text-decoration:none;position:relative}
+.nav-logo::after{content:'';position:absolute;bottom:-2px;left:0;width:100%;height:2px;background:linear-gradient(90deg,var(--teal),var(--emerald));border-radius:2px;transform:scaleX(0);transform-origin:left;transition:transform .4s var(--ease)}
+.nav-logo:hover::after{transform:scaleX(1)}
+.nav-links{display:flex;gap:.5rem;list-style:none}
+.nav-links a{color:var(--text-dim);text-decoration:none;font-size:.78rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:.5rem .9rem;border-radius:8px;transition:color .3s,background .3s}
+.nav-links a:hover{color:var(--teal);background:var(--teal-glow)}
+.nav-toggle{display:none;background:none;border:none;color:var(--text);cursor:pointer;padding:.5rem}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;position:relative;padding:120px 2.5rem 80px}
+.hero-container{max-width:1240px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 400px;gap:4rem;align-items:center;position:relative;z-index:1}
+.hero-badge{display:inline-flex;align-items:center;gap:.6rem;background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:.45rem 1.1rem .45rem .55rem;font-size:.78rem;font-weight:500;color:var(--text);margin-bottom:2rem;opacity:0;animation:slideUp .8s .2s var(--ease) forwards}
+.hero-badge-dot{width:8px;height:8px;background:var(--green);border-radius:50%;box-shadow:0 0 12px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.hero h1{font-family:var(--display);font-size:clamp(3rem,6.5vw,5.5rem);font-weight:900;color:var(--text-bright);line-height:1.02;letter-spacing:-.035em;margin-bottom:1.75rem;opacity:0;animation:slideUp .9s .35s var(--ease) forwards}
+.gradient-text{background:linear-gradient(135deg,var(--teal),var(--emerald),var(--plum));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:1.15rem;color:var(--text);max-width:520px;line-height:1.8;margin-bottom:2.5rem;opacity:0;animation:slideUp .9s .5s var(--ease) forwards}
+.hero-actions{display:flex;gap:1rem;flex-wrap:wrap;opacity:0;animation:slideUp .9s .65s var(--ease) forwards}
+.btn{display:inline-flex;align-items:center;gap:.55rem;padding:.75rem 1.6rem;font-family:var(--body);font-size:.88rem;font-weight:600;border-radius:10px;text-decoration:none;border:1px solid transparent;cursor:pointer;transition:all .35s var(--ease)}
+.btn svg{width:16px;height:16px;flex-shrink:0}
+.btn-glow{background:linear-gradient(135deg,var(--teal),var(--emerald));color:#fff;box-shadow:0 4px 24px rgba(13,148,136,0.2)}
+.btn-glow:hover{transform:translateY(-2px);box-shadow:0 8px 40px rgba(13,148,136,0.25)}
+.btn-ghost{background:rgba(0,0,0,0.03);color:var(--text-bright);border-color:var(--border)}
+.btn-ghost:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-glow)}
+
+/* ORB */
+.hero-right{position:relative}
+.stats-orb{width:360px;height:360px;border-radius:50%;background:radial-gradient(circle at 35% 35%,var(--surface2),var(--bg) 70%);border:1px solid var(--border);position:relative;margin:0 auto;opacity:0;animation:orbIn 1.2s .4s var(--ease) forwards;box-shadow:0 0 80px rgba(13,148,136,0.06),inset 0 0 60px rgba(13,148,136,0.04)}
+@keyframes orbIn{from{opacity:0;transform:scale(.7) rotate(-15deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+.orb-stat{position:absolute;text-align:center;transition:transform .3s var(--ease)}
+.orb-stat:hover{transform:scale(1.08)}
+.orb-stat .val{font-family:var(--display);font-size:2rem;font-weight:900;color:var(--text-bright);line-height:1}
+.orb-stat .lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text-dim);margin-top:.25rem;font-weight:500}
+.orb-s1{top:50%;left:50%;transform:translate(-50%,-50%)}
+.orb-s1 .val{font-size:3.2rem;background:linear-gradient(135deg,var(--teal),var(--emerald));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.orb-s2{top:12%;left:50%;transform:translateX(-50%)}
+.orb-s3{bottom:8%;left:50%;transform:translateX(-50%)}
+.orb-s4{top:26%;left:26%;transform:translate(-50%,-50%)}
+.orb-s5{top:26%;right:26%;transform:translate(50%,-50%)}
+.orb-ring{position:absolute;inset:-40px;border-radius:50%;border:2px dashed rgba(13,148,136,0.2);animation:spin 40s linear infinite}
+.orb-ring2{position:absolute;inset:-80px;border-radius:50%;border:2px dashed rgba(13,148,136,0.12);animation:spin 60s linear infinite reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* SECTIONS */
+section{position:relative;z-index:1}
+.sec-pad{padding:7rem 2.5rem}
+.wrap{max-width:1240px;margin:0 auto}
+.sec-header{margin-bottom:3.5rem}
+.sec-tag{font-family:var(--mono);font-size:.7rem;color:var(--teal);letter-spacing:.2em;text-transform:uppercase;margin-bottom:.6rem;display:flex;align-items:center;gap:.65rem}
+.sec-tag::before{content:'//';color:var(--text-dim)}
+.sec-title{font-family:var(--display);font-size:clamp(2rem,4vw,3rem);font-weight:900;color:var(--text-bright);letter-spacing:-.03em;line-height:1.1}
+.sec-title em{font-style:italic;color:var(--teal)}
+.reveal{opacity:0;transform:translateY(40px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.reveal.vis{opacity:1;transform:translateY(0)}
+
+/* BENTO */
+.bento{display:grid;grid-template-columns:repeat(12,1fr);gap:1.25rem}
+.bento-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;position:relative;overflow:hidden;transition:border-color .35s,transform .35s var(--ease)}
+.bento-card:hover{border-color:var(--border-h);transform:translateY(-4px)}
+.bc-about{grid-column:span 7}
+.bc-focus{grid-column:span 5}
+.bento-card h3{font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text-dim);margin-bottom:1rem;font-weight:500}
+.bento-card p{font-size:.95rem;line-height:1.8}
+.bc-about p+p{margin-top:.8rem}
+.bc-about::before{content:'';position:absolute;width:200px;height:200px;background:radial-gradient(circle,rgba(13,148,136,0.06),transparent 70%);top:-60px;right:-40px;pointer-events:none}
+.focus-item{display:flex;align-items:center;gap:.9rem;padding:.75rem 0;border-bottom:1px solid var(--border)}
+.focus-item:last-of-type{border-bottom:none}
+.focus-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.focus-item span{font-size:.92rem;color:var(--text-bright);font-weight:500}
+
+/* RESEARCH */
+.research-strip{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.research-cards{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.r-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;position:relative;overflow:hidden;transition:border-color .35s,transform .35s var(--ease);display:flex;flex-direction:column}
+.r-card:hover{border-color:var(--border-h);transform:translateY(-4px)}
+.r-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0}
+.r-card:nth-child(1)::before{background:linear-gradient(90deg,var(--teal),var(--emerald))}
+.r-card:nth-child(2)::before{background:linear-gradient(90deg,var(--plum),var(--coral))}
+.r-card:nth-child(3)::before{background:linear-gradient(90deg,var(--emerald),var(--teal))}
+.r-card:nth-child(4)::before{background:linear-gradient(90deg,var(--amber),var(--coral))}
+.r-num{font-family:var(--display);font-size:3.5rem;font-weight:900;color:rgba(0,0,0,0.05);position:absolute;top:.5rem;right:1.25rem;line-height:1}
+.r-card h3{font-family:var(--display);font-size:1.2rem;font-weight:700;color:var(--text-bright);margin-bottom:.75rem;line-height:1.3;position:relative}
+.r-meta{font-family:var(--mono);font-size:.7rem;color:var(--text-dim);margin-bottom:.85rem;letter-spacing:.05em}
+.r-card>p{font-size:.9rem;line-height:1.75;color:var(--text);flex:1}
+.r-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:1.25rem}
+.r-tag{font-family:var(--mono);font-size:.65rem;letter-spacing:.04em;padding:.3rem .65rem;border-radius:6px;border:1px solid var(--border);color:var(--text);background:rgba(0,0,0,0.02);transition:border-color .25s,color .25s}
+.r-tag:hover{border-color:var(--teal);color:var(--teal)}
+
+/* EDUCATION */
+.timeline-strip{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.edu-cards{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.edu-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;position:relative;overflow:hidden;transition:border-color .35s,transform .35s var(--ease)}
+.edu-card:hover{border-color:var(--border-h);transform:translateY(-4px)}
+.edu-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px}
+.edu-card:nth-child(1)::before{background:linear-gradient(90deg,var(--teal),var(--emerald))}
+.edu-card:nth-child(2)::before{background:linear-gradient(90deg,var(--plum),var(--coral))}
+.edu-card h3{font-family:var(--display);font-size:1.3rem;font-weight:700;color:var(--text-bright);margin-bottom:.3rem}
+.edu-degree{font-size:1rem;font-weight:600;color:var(--teal);margin-bottom:.4rem}
+.edu-meta{font-family:var(--mono);font-size:.72rem;color:var(--text-dim);letter-spacing:.04em;margin-bottom:.75rem}
+.edu-desc{font-size:.88rem;color:var(--text);line-height:1.7}
+
+/* PUBLICATIONS */
+.pub-list{display:flex;flex-direction:column;gap:1.25rem}
+.pub-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.75rem 2rem;position:relative;overflow:hidden;transition:border-color .35s,transform .35s var(--ease)}
+.pub-card:hover{border-color:var(--border-h);transform:translateY(-4px)}
+.pub-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:16px 0 0 16px}
+.pub-card.published::before{background:linear-gradient(180deg,var(--teal),var(--emerald))}
+.pub-card.in-progress::before{background:linear-gradient(180deg,var(--amber),var(--coral))}
+.pub-status{font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;padding:.25rem .6rem;border-radius:4px;display:inline-block;margin-bottom:.75rem}
+.pub-card.published .pub-status{background:rgba(13,148,136,0.1);color:var(--teal)}
+.pub-card.in-progress .pub-status{background:rgba(217,119,6,0.1);color:var(--amber)}
+.pub-card h4{font-family:var(--display);font-size:1.05rem;font-weight:700;color:var(--text-bright);line-height:1.4;margin-bottom:.4rem}
+.pub-authors{font-size:.85rem;color:var(--text);line-height:1.6}
+.pub-journal{font-family:var(--mono);font-size:.72rem;color:var(--text-dim);margin-top:.4rem;letter-spacing:.03em}
+
+/* AWARDS */
+.awards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+.award-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;position:relative;overflow:hidden;transition:border-color .35s,transform .35s var(--ease)}
+.award-card:hover{border-color:var(--border-h);transform:translateY(-4px)}
+.award-year{font-family:var(--display);font-size:2.5rem;font-weight:900;color:rgba(0,0,0,0.04);position:absolute;top:.4rem;right:.8rem;line-height:1}
+.award-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:.85rem;font-size:1.1rem}
+.award-card h4{font-size:.9rem;font-weight:600;color:var(--text-bright);line-height:1.4;margin-bottom:.25rem}
+.award-card p{font-size:.78rem;color:var(--text-dim);font-family:var(--mono);letter-spacing:.03em}
+
+/* CONFERENCES */
+.conf-list{display:flex;flex-direction:column}
+.conf-row{display:grid;grid-template-columns:80px 1fr;gap:2rem;padding:1.5rem 0;border-bottom:1px solid var(--border);align-items:start;transition:background .3s}
+.conf-row:hover{background:rgba(0,0,0,0.02)}
+.conf-row:last-child{border-bottom:none}
+.conf-year{font-family:var(--display);font-size:1.5rem;font-weight:900;color:rgba(0,0,0,0.06);line-height:1.4;transition:color .3s}
+.conf-row:hover .conf-year{color:var(--teal)}
+.conf-content h4{font-size:.95rem;font-weight:600;color:var(--text-bright);line-height:1.5;margin-bottom:.25rem}
+.conf-venue{font-size:.78rem;color:var(--text-dim);font-family:var(--mono);letter-spacing:.03em}
+.conf-type{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.15rem .45rem;border-radius:4px;display:inline-block;margin-left:.5rem}
+.conf-type.oral{background:rgba(13,148,136,0.1);color:var(--teal)}
+.conf-type.poster{background:rgba(147,51,234,0.1);color:var(--plum)}
+
+/* CONTACT */
+.contact-strip{background:var(--bg2);border-top:1px solid var(--border)}
+.contact-flex{display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center}
+.c-card{display:inline-flex;align-items:center;gap:.5rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.6rem 1.2rem;text-decoration:none;color:inherit;transition:border-color .35s,transform .3s var(--ease)}
+.c-card:hover{border-color:var(--teal);transform:translateY(-2px)}
+.c-card svg{color:var(--teal);width:16px;height:16px;flex-shrink:0}
+.c-card span{font-size:.85rem;font-weight:600;color:var(--text-bright)}
+
+.footer{text-align:center;padding:2.5rem;font-size:.78rem;color:var(--text-dim);border-top:1px solid var(--border);position:relative;z-index:1}
+
+@keyframes slideUp{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:translateY(0)}}
+
+/* RESPONSIVE */
+@media(max-width:1024px){
+  .hero-container{grid-template-columns:1fr;gap:3rem}
+  .stats-orb{width:280px;height:280px}
+  .orb-s1 .val{font-size:1.6rem}.orb-stat .val{font-size:1.1rem}
+  .orb-s4{top:24%;left:22%}.orb-s5{top:24%;right:22%}
+  .bento{grid-template-columns:repeat(6,1fr)}
+  .bc-about,.bc-focus{grid-column:span 6}
+  .research-cards{grid-template-columns:1fr}
+  .awards-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:768px){
+  .sec-pad{padding:4.5rem 1.25rem}.hero{padding:100px 1.25rem 60px}.nav{padding:0 1.25rem}
+  .nav-links{display:none;position:fixed;top:72px;left:0;right:0;bottom:0;background:rgba(255,255,255,0.97);backdrop-filter:blur(24px);flex-direction:column;padding:2rem;gap:.25rem}
+  .nav-links.open{display:flex}.nav-links a{font-size:1rem;padding:.85rem}.nav-toggle{display:block}
+  .stats-orb{width:240px;height:240px}.orb-s1 .val{font-size:1.4rem}.orb-stat .val{font-size:.9rem}.orb-stat .lbl{font-size:.55rem}
+  .orb-s3{bottom:5%}.orb-s4{top:22%;left:20%}.orb-s5{top:22%;right:20%}
+  .bento{grid-template-columns:1fr}.bc-about,.bc-focus{grid-column:span 1}
+  .edu-cards{grid-template-columns:1fr}
+  .conf-row{grid-template-columns:60px 1fr;gap:1rem}
+  .awards-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<canvas id="mol-canvas"></canvas>
+
+<nav class="nav" id="navbar">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">Anika James</a>
+    <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#research">Research</a></li>
+      <li><a href="#education">Education</a></li>
+      <li><a href="#publications">Publications</a></li>
+      <li><a href="#presentations">Presentations</a></li>
+      <li><a href="#awards">Awards</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-container">
+    <div class="hero-left">
+      <div class="hero-badge"><span class="hero-badge-dot"></span>PhD Candidate · University of Kansas</div>
+      <h1>Anika<br>James<span style="color:var(--teal)">.</span><br><span class="gradient-text">Molecular &amp;<br>Cellular Biologist</span></h1>
+      <p class="hero-sub">Investigating the tumor suppressor APC at the intersection of mucosal barrier integrity, inflammation &amp; intestinal homeostasis — from bench to biological insight.</p>
+      <div class="hero-actions">
+        <a href="/cdn-cgi/l/email-protection#6706090e0c06490d060a0214270c1249020312" class="btn btn-glow"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Get in Touch</a>
+        <a href="#research" class="btn btn-ghost">Research &#8595;</a>
+        <a href="Anika_James_CV.pdf" target="_blank" class="btn btn-ghost"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>CV</a>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="stats-orb">
+        <div class="orb-ring"></div><div class="orb-ring2"></div>
+        <div class="orb-stat orb-s1"><div class="val" style="font-size:1.6rem">APC</div><div class="lbl">Tumor Suppressor</div></div>
+        <div class="orb-stat orb-s3"><div class="val" style="font-size:.85rem;color:var(--coral)">Colonic</div><div class="lbl">Inflammation</div></div>
+        <div class="orb-stat orb-s4"><div class="val" style="font-size:.85rem;color:var(--plum)">Mucin</div><div class="lbl">Homeostasis</div></div>
+        <div class="orb-stat orb-s5"><div class="val" style="font-size:.85rem;color:var(--amber)">Micro</div><div class="lbl">biome</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="sec-pad">
+  <div class="wrap">
+    <div class="sec-header reveal"><p class="sec-tag">About</p><h2 class="sec-title">The story <em>so far</em></h2></div>
+    <div class="bento reveal">
+      <div class="bento-card bc-about">
+        <h3>My Journey</h3>
+        <p>I was born in Islamabad, Pakistan — a bustling garrison city nestled against the Margalla Hills, where curiosity about the natural world came early and stayed. For my undergraduate studies, I moved to Denver, Colorado, where the Rocky Mountain landscape felt a world away from home but the drive to understand biology at its deepest level only grew stronger. At Metropolitan State University of Denver, I earned my B.S. in Biology with a minor in Chemistry, and it was there that I got my first real taste of research — studying how <em>Neisseria lactamica</em> influences oral biofilm formation and developing electrochemical biosensors for pathogenic <em>Mycoplasma</em> detection.</p>
+        <p>Those early projects taught me that the most fascinating questions in biology sit at the molecular scale, where a single protein can determine whether a tissue stays healthy or spirals toward disease. That realization brought me to the University of Kansas in 2020, where I joined <strong style="color:var(--text-bright)">Prof. Kristi Neufeld's</strong> laboratory as a PhD student. Here, I've been able to go deep into the questions that drive me — how the tumor suppressor APC maintains intestinal homeostasis, what role its nuclear localization plays in regulating inflammation, and how the gut microbiome intersects with these pathways in sex-specific ways. My days involve cell culture, immunoblotting, histology, mouse colony management, and piecing together the molecular puzzle of colon biology.</p>
+        <p>Along the way, I've presented at national conferences including the AACR Annual Meeting, mentored undergraduate and graduate students, contributed to grant proposals, and developed a deep appreciation for the collaborative nature of biomedical research. With my defense scheduled for April 2026, I'm eager to apply my expertise in molecular biology to the next chapter of my scientific career.</p>
+      </div>
+      <div class="bento-card bc-focus">
+        <h3>Research Focus</h3>
+        <div class="focus-item"><div class="focus-dot" style="background:var(--teal);box-shadow:0 0 8px var(--teal)"></div><span>Tumor Suppressor APC &amp; Nuclear Localization</span></div>
+        <div class="focus-item"><div class="focus-dot" style="background:var(--plum);box-shadow:0 0 8px var(--plum)"></div><span>Colonic Inflammation &amp; NF-&#954;B Signaling</span></div>
+        <div class="focus-item"><div class="focus-dot" style="background:var(--emerald);box-shadow:0 0 8px var(--emerald)"></div><span>Mucin Homeostasis &amp; Barrier Integrity</span></div>
+        <div class="focus-item"><div class="focus-dot" style="background:var(--amber);box-shadow:0 0 8px var(--amber)"></div><span>Microbiome Remodeling &amp; Colitis</span></div>
+        <h3 style="margin-top:1.5rem;">Beyond the Lab</h3>
+        <p style="font-size:.92rem;line-height:1.75;">When I'm not managing my mouse colonies or analyzing tissue sections, you'll probably find me exploring Kansas City's food scene, discovering hiking trails, or video-calling family. My time volunteering in the NICU at North Suburban Medical Center showed me the human side of science, and it continues to inspire my work at the bench. I believe the best research comes from a place of genuine care for the people it ultimately serves.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESEARCH -->
+<section id="research" class="research-strip sec-pad">
+  <div class="wrap">
+    <div class="sec-header reveal"><p class="sec-tag">Research</p><h2 class="sec-title">Current <em>investigations</em></h2></div>
+    <div class="research-cards reveal">
+      <div class="r-card"><span class="r-num">01</span><h3>Nuclear APC &amp; Colonic Inflammation</h3><p class="r-meta">Neufeld Lab · KU · 2020 – Present</p><p>The tumor suppressor APC is best known for its role in Wnt signaling, but its nuclear functions remain incompletely understood. My research investigates how nuclear localization of APC couples epithelial NF-&#954;B control to mucin homeostasis. Using mammalian cell culture, immunoblotting, immunofluorescence, and mouse models, I've uncovered pathways linking nuclear APC to the regulation of MUC2 expression.</p><div class="r-tags"><span class="r-tag">Western Blot</span><span class="r-tag">Cell Culture</span><span class="r-tag">NF-&#954;B</span><span class="r-tag">Mouse Models</span></div></div>
+      <div class="r-card"><span class="r-num">02</span><h3>Mucus Barrier Integrity &amp; MUC2</h3><p class="r-meta">Neufeld Lab · KU · 2020 – Present</p><p>The colonic mucus barrier is a critical first line of defense against luminal pathogens and inflammatory insults. I investigate how nuclear APC regulates MUC2 expression — the primary gel-forming mucin — and what happens to barrier integrity when this regulation breaks down. Using histological techniques including Alcian Blue staining, immunohistochemistry, and fluorescence in situ hybridization, I characterize changes in mucin production across different genetic backgrounds.</p><div class="r-tags"><span class="r-tag">IHC</span><span class="r-tag">FISH</span><span class="r-tag">Histology</span><span class="r-tag">Alcian Blue</span></div></div>
+      <div class="r-card"><span class="r-num">03</span><h3>Microbiome &amp; Helicobacter-Mediated Protection</h3><p class="r-meta">Neufeld Lab · KU · 2020 – Present</p><p>The gut microbiome can either exacerbate or protect against colitis, and the mechanisms that tip this balance are poorly understood. I'm studying how <em>Helicobacter hepaticus</em> colonization drives APC-dependent microbiome remodeling that paradoxically protects against colitis. Using 16S rRNA sequencing, and PICRUSt functional analysis, I aim to identify which microbial communities and metabolic pathways are reshaped by nuclear APC status.</p><div class="r-tags"><span class="r-tag">16S rRNA</span><span class="r-tag">Microbiome</span></div></div>
+      <div class="r-card"><span class="r-num">04</span><h3>Sexually Dimorphic Colitis &amp; Estrogen Receptor Signaling</h3><p class="r-meta">Neufeld Lab · KU · 2020 – Present</p><p>Colorectal disease often presents differently in males and females, yet the molecular basis for this sexual dimorphism remains elusive. Using Apc<sup>mNLS/mNLS</sup> mice — which lack nuclear APC — I investigate how nuclear APC deficiency unmasks sex-specific colitis susceptibility and phenocopies estrogen receptor alpha loss-of-function. By combining qPCR, histological scoring, and mouse colony management across sex-matched cohorts, this work reveals how hormonal signaling intersects with tumor suppressor function to shape colonic inflammation outcomes.</p><div class="r-tags"><span class="r-tag">ER&#945; Signaling</span><span class="r-tag">Sexual Dimorphism</span><span class="r-tag">Mouse Models</span><span class="r-tag">qPCR</span></div></div>
+
+    </div>
+  </div>
+</section>
+
+<!-- EDUCATION -->
+<section id="education" class="timeline-strip sec-pad">
+  <div class="wrap">
+    <div class="sec-header reveal"><p class="sec-tag">Education</p><h2 class="sec-title">Academic <em>journey</em></h2></div>
+    <div class="edu-cards reveal">
+      <div class="edu-card"><h3>University of Kansas</h3><p class="edu-degree">PhD in Molecular, Cellular &amp; Developmental Biology</p><p class="edu-meta">Aug 2020 – Apr 2026 (Expected) · GPA: 3.85 / 4.00</p><p class="edu-desc">As a Graduate Research Assistant under Prof. Kristi Neufeld, my PhD has been an immersion into the molecular mechanisms of intestinal homeostasis and cancer biology. Beyond the bench, I served as a Teaching Assistant for Principles of Organismal Biology and The Molecular Biology of Cancer, and led the redesign of the Biology Study Room collaborative learning space. Supported by a Dean's Doctoral Fellowship and recognized with KUCC Travel Awards and a FASEB Outstanding Poster Presentation Award.</p></div>
+      <div class="edu-card"><h3>MSU Denver</h3><p class="edu-degree">B.S. in Biology · Minor in Chemistry</p><p class="edu-meta">Aug 2016 – May 2020 · GPA: 3.80 / 4.00</p><p class="edu-desc">Metropolitan State University of Denver is where my scientific foundation was built — from cell biology and microbiology to organic chemistry and biochemistry. I got involved in undergraduate research early, working in the Zajdowicz Lab on oral biofilm formation and the Bonham Lab on electrochemical biosensor development. I was supported by Undergraduate Research Mini-Grants, CO-WY AMP funding, and the Dean and Provost Scholarship, and presented at the ASBMB national poster competition.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- PUBLICATIONS -->
+<section id="publications" class="sec-pad">
+  <div class="wrap">
+    <div class="sec-header reveal"><p class="sec-tag">Publications</p><h2 class="sec-title">Advancing <em>the field</em></h2></div>
+    <div class="pub-list reveal">
+      <div class="pub-card published">
+        <span class="pub-status">Published</span>
+        <h4>Nuclear adenomatous polyposis coli elevates STAT1 and reduces CXCL1, 2, and 3 expression and inhibits neutrophil recruitment</h4>
+        <p class="pub-authors">Sandoval, A. Q., <strong>James, A.</strong>, &amp; Neufeld, K. L.</p>
+        <p class="pub-journal">Cellular Signaling, 111957</p>
+      </div>
+      <div class="pub-card in-progress">
+        <span class="pub-status">In Progress</span>
+        <h4>Nuclear APC Deficiency in Apc<sup>mNLS/mNLS</sup> Mice Unmasks Sexually Dimorphic Colitis Susceptibility and Phenocopies Estrogen Receptor Alpha Loss-of-Function</h4>
+        <p class="pub-authors"><strong>James, A.</strong>, Washington, K., &amp; Neufeld, K. L.</p>
+        <p class="pub-journal">Manuscript in preparation</p>
+      </div>
+      <div class="pub-card in-progress">
+        <span class="pub-status">In Progress</span>
+        <h4><em>Helicobacter hepaticus</em> colonization modulates microbiome and restores protection against colitis in Apc wild-type mice</h4>
+        <p class="pub-authors"><strong>James, A.</strong>, Washington, K., &amp; Neufeld, K. L.</p>
+        <p class="pub-journal">Manuscript in preparation</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRESENTATIONS -->
+<section id="presentations" class="sec-pad" style="background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="wrap">
+    <div class="sec-header reveal"><p class="sec-tag">Presentations</p><h2 class="sec-title">Sharing <em>the science</em></h2></div>
+    <div class="conf-list reveal">
+      <div class="conf-row"><span class="conf-year">2025</span><div class="conf-content"><h4>Microbiome modulation by <em>Helicobacter hepaticus</em> reveals nuclear APC–dependent protection against colitis</h4><p class="conf-venue">BIOL 902 – Advanced Molecular Cellular Biology Seminar; Lawrence, KS <span class="conf-type oral">Oral</span></p></div></div>
+      <div class="conf-row"><span class="conf-year">2025</span><div class="conf-content"><h4>Nuclear APC maintains colon homeostasis and mitigates inflammation</h4><p class="conf-venue">AACR Annual Meeting 2025; Chicago, IL <span class="conf-type poster">Poster</span></p></div></div>
+      <div class="conf-row"><span class="conf-year">2025</span><div class="conf-content"><h4>Nuclear APC maintains colon homeostasis and mitigates inflammation</h4><p class="conf-venue">Molecular Biosciences Symposium; Lawrence, KS <span class="conf-type poster">Poster</span></p></div></div>
+      <div class="conf-row"><span class="conf-year">2025</span><div class="conf-content"><h4>Nuclear APC maintains colon homeostasis and mitigates inflammation</h4><p class="conf-venue">KUCC Cancer Biology Research Program Meeting; Olathe, KS <span class="conf-type oral">Oral</span></p></div></div>
+      <div class="conf-row"><span class="conf-year">2025</span><div class="conf-content"><h4>Nuclear APC maintains colon homeostasis and mitigates inflammation</h4><p class="conf-venue">KU Center for Genomics 4th Annual Symposium; Lawrence, KS <span class="conf-type poster">Poster</span></p></div></div>
+      <div class="conf-row"><span class="conf-year">2025</span><div class="conf-content"><h4>Nuclear Localization of APC Is Essential for Mucus Barrier Integrity and Mitigation of Colonic Inflammation</h4><p class="conf-venue">23rd Annual K-INBRE Symposium; Kansas City, MO <span class="conf-type poster">Poster</span></p></div></div>
+      <div class="conf-row"><span class="conf-year">2024</span><div class="conf-content"><h4>Nuclear Localization of APC Is Essential for Colon Mucus Barrier Integrity and Mitigation of Colonic Inflammation</h4><p class="conf-venue">KUCC Research Week 2024; Overland Park, KS <span class="conf-type poster">Poster</span></p></div></div>
+      <div class="conf-row"><span class="conf-year">2024</span><div class="conf-content"><h4>The Role of Nuclear APC in Regulating MUC2 Expression and Colonic Inflammation</h4><p class="conf-venue">KUCC Cancer Biology Research Program Meeting; Olathe, KS <span class="conf-type poster">Poster</span></p></div></div>
+      <div class="conf-row"><span class="conf-year">2023</span><div class="conf-content"><h4>The Role of Nuclear APC in Regulating MUC2 Expression and Colonic Inflammation</h4><p class="conf-venue">FASEB GI Epithelium Conference; Steamboat Springs, CO <span class="conf-type poster">Poster</span></p></div></div>
+      <div class="conf-row"><span class="conf-year">2022</span><div class="conf-content"><h4>The Role of Nuclear APC in Regulating MUC2 Expression and Colonic Inflammation</h4><p class="conf-venue">FASEB "Gastrointestinal Tract XX"; Steamboat Springs, CO <span class="conf-type poster">Poster</span></p></div></div>
+      <div class="conf-row"><span class="conf-year">2021</span><div class="conf-content"><h4>The role of nuclear APC in regulating MUC2 expression and colonic inflammation</h4><p class="conf-venue">University of Kansas Cancer Center Research Symposium; Kansas City, KS <span class="conf-type oral">Oral</span></p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- AWARDS -->
+<section id="awards" class="sec-pad">
+  <div class="wrap">
+    <div class="sec-header reveal"><p class="sec-tag">Recognition</p><h2 class="sec-title">Awards &amp; <em>honors</em></h2></div>
+    <div class="awards-grid reveal">
+      <div class="award-card"><span class="award-year">2025</span><div class="award-icon" style="background:rgba(13,148,136,0.1)"></div><h4>KUCC Poster Travel Award</h4><p>Dec 2025</p></div>
+      <div class="award-card"><span class="award-year">2022</span><div class="award-icon" style="background:rgba(147,51,234,0.1)"></div><h4>FASEB Outstanding Poster Presentation Award</h4><p>Fall 2022</p></div>
+      <div class="award-card"><span class="award-year">2022</span><div class="award-icon" style="background:rgba(5,150,105,0.1)"></div><h4>Dean's Doctoral Fellowship (Fully Funded)</h4><p>2020–2021 &amp; 2022–2023</p></div>
+      <div class="award-card"><span class="award-year">2021</span><div class="award-icon" style="background:rgba(244,63,94,0.1)"></div><h4>KUCC Poster Travel Award</h4><p>Dec 2021</p></div>
+      <div class="award-card"><span class="award-year">2019</span><div class="award-icon" style="background:rgba(217,119,6,0.1)"></div><h4>ASBMB Certificate of Recognition</h4><p>23rd Annual Undergraduate Poster Competition</p></div>
+      <div class="award-card"><span class="award-year">2019</span><div class="award-icon" style="background:rgba(13,148,136,0.1)"></div><h4>CO-WY AMP Research Grant &amp; Undergraduate Research Mini-Grants</h4><p>2018 &amp; 2019</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="contact-strip sec-pad">
+  <div class="wrap">
+    <div class="sec-header reveal"><p class="sec-tag">Connect</p><h2 class="sec-title">Let's <em>talk</em></h2></div>
+    <div class="contact-flex reveal">
+      <a href="/cdn-cgi/l/email-protection#40212e292b216e2a212d2533002b356e252435" class="c-card"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg><span><span class="__cf_email__" data-cfemail="71101f181a105f1b101c1402311a045f141504">[email&#160;protected]</span></span></a>
+      <a href="https://www.linkedin.com/in/anika-james-8b76a821b/" target="_blank" class="c-card"><svg fill="currentColor" viewBox="0 0 24 24" width="16" height="16"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg><span>LinkedIn</span></a>
+      <a href="Anika_James_CV.pdf" target="_blank" class="c-card"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg><span>Download CV</span></a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">&#169; 2026 Anika James</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+(function(){
+  var canvas=document.getElementById('mol-canvas');
+  var ctx=canvas.getContext('2d');
+  var W,H,mouse={x:-999,y:-999},t=0;
+  var cells=[],bacteria=[],helices=[],vesicles=[];
+
+  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight}
+  window.addEventListener('resize',resize);resize();
+  window.addEventListener('mousemove',function(e){mouse.x=e.clientX;mouse.y=e.clientY});
+
+  /* --- Floating epithelial cells --- */
+  var nCells=Math.min(Math.floor(W*H/90000),14);
+  for(var i=0;i<nCells;i++){
+    cells.push({
+      x:Math.random()*W,y:Math.random()*H,
+      vx:(Math.random()-.5)*.18,vy:(Math.random()-.5)*.18,
+      r:Math.random()*18+22,
+      nucleusR:Math.random()*6+7,
+      phase:Math.random()*Math.PI*2,
+      hue:Math.random()>.5?168:155,
+      organelles:[]
+    });
+    /* small organelles inside each cell */
+    var nc=Math.floor(Math.random()*3)+2;
+    for(var j=0;j<nc;j++){
+      cells[i].organelles.push({angle:Math.random()*Math.PI*2,dist:Math.random()*8+5,r:Math.random()*2+1.5});
+    }
+  }
+
+  /* --- Rod-shaped bacteria (gut microbiome) --- */
+  var nBac=Math.min(Math.floor(W*H/30000),30);
+  for(var i=0;i<nBac;i++){
+    bacteria.push({
+      x:Math.random()*W,y:Math.random()*H,
+      vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,
+      len:Math.random()*12+8,
+      w:Math.random()*2.5+2,
+      angle:Math.random()*Math.PI*2,
+      rotSpeed:(Math.random()-.5)*.008,
+      type:Math.floor(Math.random()*3), /* 0=rod, 1=coccus, 2=curved */
+      hue:[168,280,35,320,200][Math.floor(Math.random()*5)],
+      phase:Math.random()*Math.PI*2
+    });
+  }
+
+  /* --- DNA double helix segments --- */
+  var nHelix=Math.min(Math.floor(W*H/120000),6);
+  for(var i=0;i<nHelix;i++){
+    helices.push({
+      x:Math.random()*W,y:Math.random()*H,
+      vx:(Math.random()-.5)*.12,vy:(Math.random()-.5)*.12,
+      phase:Math.random()*Math.PI*2,
+      angle:Math.random()*Math.PI,
+      len:Math.random()*60+50,
+      amp:Math.random()*6+8
+    });
+  }
+
+  /* --- Tiny vesicles / signaling particles --- */
+  var nVes=Math.min(Math.floor(W*H/8000),60);
+  for(var i=0;i<nVes;i++){
+    vesicles.push({
+      x:Math.random()*W,y:Math.random()*H,
+      vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,
+      r:Math.random()*2+1,
+      opacity:Math.random()*.25+.1,
+      hue:[168,200,280,320,45][Math.floor(Math.random()*5)]
+    });
+  }
+
+  function moveEntity(e,repel){
+    e.x+=e.vx;e.y+=e.vy;
+    if(e.x<-60)e.x=W+60;if(e.x>W+60)e.x=-60;
+    if(e.y<-60)e.y=H+60;if(e.y>H+60)e.y=-60;
+    if(repel){
+      var dx=e.x-mouse.x,dy=e.y-mouse.y,md=Math.sqrt(dx*dx+dy*dy);
+      if(md<160&&md>0){e.vx+=(dx/md)*.08;e.vy+=(dy/md)*.08}
+    }
+    e.vx*=.999;e.vy*=.999;
+  }
+
+  function drawCell(c){
+    var wobble=Math.sin(t*.012+c.phase)*2;
+    ctx.save();
+    ctx.translate(c.x,c.y);
+
+    /* outer membrane */
+    ctx.beginPath();
+    ctx.arc(0,0,c.r+wobble,0,Math.PI*2);
+    ctx.strokeStyle='hsla('+c.hue+',45%,55%,.18)';
+    ctx.lineWidth=2;
+    ctx.stroke();
+    ctx.fillStyle='hsla('+c.hue+',40%,60%,.04)';
+    ctx.fill();
+
+    /* cytoplasm texture — faint inner ring */
+    ctx.beginPath();
+    ctx.arc(0,0,c.r*0.75+wobble*.5,0,Math.PI*2);
+    ctx.strokeStyle='hsla('+c.hue+',35%,60%,.07)';
+    ctx.lineWidth=1;
+    ctx.stroke();
+
+    /* nucleus */
+    ctx.beginPath();
+    ctx.arc(Math.sin(t*.008+c.phase)*3,Math.cos(t*.006+c.phase)*3,c.nucleusR,0,Math.PI*2);
+    ctx.fillStyle='hsla('+c.hue+',50%,45%,.15)';
+    ctx.fill();
+    ctx.strokeStyle='hsla('+c.hue+',50%,40%,.22)';
+    ctx.lineWidth=1.5;
+    ctx.stroke();
+
+    /* organelles */
+    for(var i=0;i<c.organelles.length;i++){
+      var o=c.organelles[i];
+      var oAngle=o.angle+t*.003;
+      var ox=Math.cos(oAngle)*o.dist,oy=Math.sin(oAngle)*o.dist;
+      ctx.beginPath();
+      ctx.arc(ox,oy,o.r,0,Math.PI*2);
+      ctx.fillStyle='hsla('+(c.hue+40)+',45%,55%,.2)';
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawBacterium(b){
+    ctx.save();
+    ctx.translate(b.x,b.y);
+    ctx.rotate(b.angle);
+    b.angle+=b.rotSpeed;
+
+    if(b.type===0){
+      /* rod bacterium (bacillus) */
+      ctx.beginPath();
+      ctx.moveTo(-b.len,0);
+      ctx.arcTo(-b.len,-b.w,-b.len+b.w,-b.w,b.w);
+      ctx.lineTo(b.len-b.w,-b.w);
+      ctx.arcTo(b.len,-b.w,b.len,0,b.w);
+      ctx.arcTo(b.len,b.w,b.len-b.w,b.w,b.w);
+      ctx.lineTo(-b.len+b.w,b.w);
+      ctx.arcTo(-b.len,b.w,-b.len,0,b.w);
+      ctx.closePath();
+      ctx.fillStyle='hsla('+b.hue+',50%,50%,.14)';
+      ctx.fill();
+      ctx.strokeStyle='hsla('+b.hue+',50%,45%,.22)';
+      ctx.lineWidth=1;
+      ctx.stroke();
+      /* flagellum */
+      ctx.beginPath();
+      ctx.moveTo(b.len,0);
+      for(var fi=0;fi<12;fi++){
+        var fx=b.len+fi*3,fy=Math.sin(t*.04+fi*.8+b.phase)*3;
+        ctx.lineTo(fx,fy);
+      }
+      ctx.strokeStyle='hsla('+b.hue+',40%,50%,.12)';
+      ctx.lineWidth=.8;
+      ctx.stroke();
+    } else if(b.type===1){
+      /* coccus (spherical) */
+      ctx.beginPath();
+      ctx.arc(0,0,b.w+1,0,Math.PI*2);
+      ctx.fillStyle='hsla('+b.hue+',50%,50%,.12)';
+      ctx.fill();
+      ctx.strokeStyle='hsla('+b.hue+',50%,45%,.2)';
+      ctx.lineWidth=1;
+      ctx.stroke();
+    } else {
+      /* curved / vibrio */
+      ctx.beginPath();
+      ctx.arc(0,-b.len*.6,b.len,Math.PI*.3,Math.PI*.7);
+      ctx.strokeStyle='hsla('+b.hue+',50%,45%,.2)';
+      ctx.lineWidth=b.w;
+      ctx.lineCap='round';
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawHelix(h){
+    ctx.save();
+    ctx.translate(h.x,h.y);
+    ctx.rotate(h.angle);
+    var steps=24;
+    var segLen=h.len/steps;
+
+    for(var s=0;s<steps;s++){
+      var px=s*segLen-h.len/2;
+      var phase1=t*.02+h.phase+s*.55;
+      var phase2=phase1+Math.PI;
+      var y1=Math.sin(phase1)*h.amp;
+      var y2=Math.sin(phase2)*h.amp;
+      var depth1=(Math.cos(phase1)+1)/2;
+      var depth2=(Math.cos(phase2)+1)/2;
+
+      /* base pair rungs */
+      if(s%3===0){
+        ctx.beginPath();
+        ctx.moveTo(px,y1);ctx.lineTo(px,y2);
+        ctx.strokeStyle='rgba(13,148,136,.08)';
+        ctx.lineWidth=1;
+        ctx.stroke();
+        /* base pair dots */
+        var midY=(y1+y2)/2;
+        ctx.beginPath();ctx.arc(px,midY-2,1.2,0,Math.PI*2);
+        ctx.fillStyle='hsla(350,50%,55%,.15)';ctx.fill();
+        ctx.beginPath();ctx.arc(px,midY+2,1.2,0,Math.PI*2);
+        ctx.fillStyle='hsla(45,60%,50%,.15)';ctx.fill();
+      }
+
+      /* strand 1 backbone */
+      ctx.beginPath();
+      ctx.arc(px,y1,2.2,0,Math.PI*2);
+      ctx.fillStyle='hsla(168,55%,45%,'+(depth1*.18+.06)+')';
+      ctx.fill();
+
+      /* strand 2 backbone */
+      ctx.beginPath();
+      ctx.arc(px,y2,2.2,0,Math.PI*2);
+      ctx.fillStyle='hsla(280,45%,50%,'+(depth2*.18+.06)+')';
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    t++;
+
+    /* vesicles (background layer) */
+    for(var i=0;i<vesicles.length;i++){
+      var v=vesicles[i];
+      moveEntity(v,true);
+      /* faint connections between nearby vesicles */
+      for(var j=i+1;j<vesicles.length;j++){
+        var v2=vesicles[j];
+        var dx=v.x-v2.x,dy=v.y-v2.y,d=Math.sqrt(dx*dx+dy*dy);
+        if(d<120){
+          ctx.beginPath();ctx.moveTo(v.x,v.y);ctx.lineTo(v2.x,v2.y);
+          ctx.strokeStyle='rgba(13,148,136,'+((1-d/120)*.06)+')';
+          ctx.lineWidth=.5;ctx.stroke();
+        }
+      }
+      ctx.beginPath();
+      ctx.arc(v.x,v.y,v.r,0,Math.PI*2);
+      ctx.fillStyle='hsla('+v.hue+',50%,50%,'+v.opacity+')';
+      ctx.fill();
+    }
+
+    /* DNA helices */
+    for(var i=0;i<helices.length;i++){
+      moveEntity(helices[i],true);
+      drawHelix(helices[i]);
+    }
+
+    /* bacteria */
+    for(var i=0;i<bacteria.length;i++){
+      moveEntity(bacteria[i],true);
+      drawBacterium(bacteria[i]);
+    }
+
+    /* cells */
+    for(var i=0;i<cells.length;i++){
+      moveEntity(cells[i],true);
+      drawCell(cells[i]);
+    }
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+var nav=document.getElementById('navbar');
+window.addEventListener('scroll',function(){nav.classList.toggle('scrolled',window.scrollY>40)});
+var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('vis');obs.unobserve(e.target)}})},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el)});
+</script>
+</body>
+</html>
